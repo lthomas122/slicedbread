@@ -2,14 +2,10 @@
 
 class Sydney_Contact_Info extends WP_Widget {
 
-    function sydney_contact_info() {
+	public function __construct() {
 		$widget_ops = array('classname' => 'sydney_contact_info_widget', 'description' => __( 'Display your contact info', 'sydney') );
-        parent::WP_Widget(false, $name = __('Sydney: Contact info', 'sydney'), $widget_ops);
-		$this->alt_option_name = 'sydney_contact_info';
-		
-		add_action( 'save_post', array($this, 'flush_widget_cache') );
-		add_action( 'deleted_post', array($this, 'flush_widget_cache') );
-		add_action( 'switch_theme', array($this, 'flush_widget_cache') );		
+        parent::__construct(false, $name = __('Sydney: Contact info', 'sydney'), $widget_ops);
+		$this->alt_option_name = 'sydney_contact_info';	
     }
 	
 	function form($instance) {
@@ -43,46 +39,21 @@ class Sydney_Contact_Info extends WP_Widget {
 		$instance['address'] = strip_tags($new_instance['address']);
 		$instance['phone'] = strip_tags($new_instance['phone']);
 		$instance['email'] = sanitize_email($new_instance['email']);
-		$this->flush_widget_cache();
-
-		$alloptions = wp_cache_get( 'alloptions', 'options' );
-		if ( isset($alloptions['sydney_contact_info']) )
-			delete_option('sydney_contact_info');		  
-		  
+	  
 		return $instance;
 	}
-	
-	function flush_widget_cache() {
-		wp_cache_delete('sydney_contact_info', 'widget');
-	}
-	
+		
 	function widget($args, $instance) {
-		$cache = array();
-		if ( ! $this->is_preview() ) {
-			$cache = wp_cache_get( 'sydney_contact_info', 'widget' );
-		}
-
-		if ( ! is_array( $cache ) ) {
-			$cache = array();
-		}
-
 		if ( ! isset( $args['widget_id'] ) ) {
 			$args['widget_id'] = $this->id;
 		}
-
-		if ( isset( $cache[ $args['widget_id'] ] ) ) {
-			echo $cache[ $args['widget_id'] ];
-			return;
-		}
-
-		ob_start();
 		extract($args);
 
-		$title 		= ( ! empty( $instance['title'] ) ) ? $instance['title'] : __( 'Contact info', 'sydney' );
+		$title 		= ( ! empty( $instance['title'] ) ) ? $instance['title'] : '';
 		$title 		= apply_filters( 'widget_title', $title, $instance, $this->id_base );
 		$address   	= isset( $instance['address'] ) ? esc_html( $instance['address'] ) : '';
 		$phone   	= isset( $instance['phone'] ) ? esc_html( $instance['phone'] ) : '';
-		$email   	= isset( $instance['email'] ) ? esc_html( $instance['email'] ) : '';
+		$email   	= isset( $instance['email'] ) ? antispambot(esc_html( $instance['email'] )) : '';
 
 		echo $before_widget;
 		
@@ -106,13 +77,6 @@ class Sydney_Contact_Info extends WP_Widget {
 
 		echo $after_widget;
 
-
-		if ( ! $this->is_preview() ) {
-			$cache[ $args['widget_id'] ] = ob_get_flush();
-			wp_cache_set( 'sydney_contact_info', $cache, 'widget' );
-		} else {
-			ob_end_flush();
-		}
 	}
 	
 }	

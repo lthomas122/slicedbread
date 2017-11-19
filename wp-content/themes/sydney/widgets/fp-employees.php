@@ -2,14 +2,11 @@
 
 class Sydney_Employees extends WP_Widget {
 
-    function sydney_employees() {
+	public function __construct() {
 		$widget_ops = array('classname' => 'sydney_employees_widget', 'description' => __( 'Display your team members in a stylish way.', 'sydney') );
-        parent::WP_Widget(false, $name = __('Sydney FP: Employees', 'sydney'), $widget_ops);
+        parent::__construct(false, $name = __('Sydney FP: Employees', 'sydney'), $widget_ops);
 		$this->alt_option_name = 'sydney_employees_widget';
-		
-		add_action( 'save_post', array($this, 'flush_widget_cache') );
-		add_action( 'deleted_post', array($this, 'flush_widget_cache') );
-		add_action( 'switch_theme', array($this, 'flush_widget_cache') );		
+
     }
 
 	function form($instance) {
@@ -18,6 +15,7 @@ class Sydney_Employees extends WP_Widget {
 		$category  = isset( $instance['category'] ) ? esc_attr( $instance['category'] ) : '';
 		$see_all   = isset( $instance['see_all'] ) ? esc_url_raw( $instance['see_all'] ) : '';	
 		$see_all_text  	= isset( $instance['see_all_text'] ) ? esc_html( $instance['see_all_text'] ) : '';		
+		$center_content	= isset( $instance['center_content'] ) ? (bool) $instance['center_content'] : false;	
 	?>
 
 	<p><?php _e('In order to display this widget, you must first add some employees from the dashboard. Add as many as you want and the theme will automatically display them all.', 'sydney'); ?></p>
@@ -33,51 +31,28 @@ class Sydney_Employees extends WP_Widget {
 	<input class="widefat custom_media_url" id="<?php echo $this->get_field_id( 'see_all_text' ); ?>" name="<?php echo $this->get_field_name( 'see_all_text' ); ?>" type="text" value="<?php echo $see_all_text; ?>" size="3" /></p>			
 	<p><label for="<?php echo $this->get_field_id( 'category' ); ?>"><?php _e( 'Enter the slug for your category or leave empty to show all employees.', 'sydney' ); ?></label>
 	<input class="widefat" id="<?php echo $this->get_field_id( 'category' ); ?>" name="<?php echo $this->get_field_name( 'category' ); ?>" type="text" value="<?php echo $category; ?>" size="3" /></p>
+	<p><input class="checkbox" type="checkbox" <?php checked( $center_content ); ?> id="<?php echo $this->get_field_id( 'center_content' ); ?>" name="<?php echo $this->get_field_name( 'center_content' ); ?>" />
+	<label for="<?php echo $this->get_field_id( 'center_content' ); ?>"><?php _e( 'Center the employees? (use only if you have 1 or 2 employees)', 'sydney' ); ?></label></p>
 	
 	<?php
 	}
 
 	function update($new_instance, $old_instance) {
 		$instance = $old_instance;
-		$instance['title'] = strip_tags($new_instance['title']);
-		$instance['number'] = strip_tags($new_instance['number']);		
-		$instance['see_all'] = esc_url_raw( $new_instance['see_all'] );
+		$instance['title'] 			= strip_tags($new_instance['title']);
+		$instance['number'] 		= strip_tags($new_instance['number']);		
+		$instance['see_all'] 		= esc_url_raw( $new_instance['see_all'] );
 		$instance['see_all_text'] 	= strip_tags($new_instance['see_all_text']);			
-		$instance['category'] = strip_tags($new_instance['category']);
+		$instance['category'] 		= strip_tags($new_instance['category']);
+		$instance['center_content'] = isset( $new_instance['center_content'] ) ? (bool) $new_instance['center_content'] : false;		
 
-		$this->flush_widget_cache();
-
-		$alloptions = wp_cache_get( 'alloptions', 'options' );
-		if ( isset($alloptions['sydney_employees']) )
-			delete_option('sydney_employees');		  
-		  
 		return $instance;
 	}
-	
-	function flush_widget_cache() {
-		wp_cache_delete('sydney_employees', 'widget');
-	}
-	
+
 	function widget($args, $instance) {
-		$cache = array();
-		if ( ! $this->is_preview() ) {
-			$cache = wp_cache_get( 'sydney_employees', 'widget' );
-		}
-
-		if ( ! is_array( $cache ) ) {
-			$cache = array();
-		}
-
 		if ( ! isset( $args['widget_id'] ) ) {
 			$args['widget_id'] = $this->id;
 		}
-
-		if ( isset( $cache[ $args['widget_id'] ] ) ) {
-			echo $cache[ $args['widget_id'] ];
-			return;
-		}
-
-		ob_start();
 		extract($args);
 
 		$title = ( ! empty( $instance['title'] ) ) ? $instance['title'] : '';
@@ -89,6 +64,7 @@ class Sydney_Employees extends WP_Widget {
 		if ( ! $number )
 			$number = -1;			
 		$category 		= isset( $instance['category'] ) ? esc_attr($instance['category']) : '';
+		$center_content	= isset( $instance['center_content'] ) ? $instance['center_content'] : false;
 
 		$r = new WP_Query(array(
 			'no_found_rows'       => true,
@@ -105,7 +81,7 @@ class Sydney_Employees extends WP_Widget {
 
 		<?php if ( $title ) echo $before_title . $title . $after_title; ?>
 
-		<div class="roll-team carousel owl-carousel">
+		<div class="roll-team carousel owl-carousel" data-widgetid="employees-<?php echo $args['widget_id']; ?>">
 			<?php while ( $r->have_posts() ) : $r->the_post(); ?>
 				<?php //Get the custom field values
 					$position = get_post_meta( get_the_ID(), 'wpcf-position', true );
@@ -169,16 +145,27 @@ class Sydney_Employees extends WP_Widget {
 	<?php
 		wp_reset_postdata();
 
+		if ($center_content) :
+
+		echo '<style>';
+			echo '@media only screen and (min-width: 971px) {';
+				echo '[data-widgetid="employees-' . $args['widget_id'] . '"].roll-team .owl-wrapper { text-align: center; width: 100% !important; }';
+				echo '[data-widgetid="employees-' . $args['widget_id'] . '"].roll-team.owl-carousel .owl-item { float: none; display: inline-block; }';
+			echo '}';
+		echo '</style>';
+?>
+
+<?php
+
+
+
+
+		endif;
+		
 		endif;
 
 		echo $args['after_widget'];
 
-		if ( ! $this->is_preview() ) {
-			$cache[ $args['widget_id'] ] = ob_get_flush();
-			wp_cache_set( 'sydney_employees', $cache, 'widget' );
-		} else {
-			ob_end_flush();
-		}
 	}
 	
 }

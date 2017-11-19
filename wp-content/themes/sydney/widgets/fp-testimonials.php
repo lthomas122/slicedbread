@@ -2,14 +2,10 @@
 
 class Sydney_Testimonials extends WP_Widget {
 
-    function sydney_testimonials() {
+	public function __construct() {
 		$widget_ops = array('classname' => 'sydney_testimonials_widget', 'description' => __( 'Display your testimonials in a slider.', 'sydney') );
-        parent::WP_Widget(false, $name = __('Sydney FP: Testimonials', 'sydney'), $widget_ops);
+        parent::__construct(false, $name = __('Sydney FP: Testimonials', 'sydney'), $widget_ops);
 		$this->alt_option_name = 'sydney_testimonials_widget';
-		
-		add_action( 'save_post', array($this, 'flush_widget_cache') );
-		add_action( 'deleted_post', array($this, 'flush_widget_cache') );
-		add_action( 'switch_theme', array($this, 'flush_widget_cache') );		
     }
 	
 	function form($instance) {
@@ -17,7 +13,8 @@ class Sydney_Testimonials extends WP_Widget {
 		$number    		= isset( $instance['number'] ) ? intval( $instance['number'] ) : -1;
 		$category   	= isset( $instance['category'] ) ? esc_attr( $instance['category'] ) : '';
 		$see_all   		= isset( $instance['see_all'] ) ? esc_url_raw( $instance['see_all'] ) : '';
-		$see_all_text  	= isset( $instance['see_all_text'] ) ? esc_html( $instance['see_all_text'] ) : '';		
+		$see_all_text  	= isset( $instance['see_all_text'] ) ? esc_html( $instance['see_all_text'] ) : '';	
+		$autoplay    	= isset( $instance['autoplay'] ) ? intval( $instance['autoplay'] ) : 5000;	
 	?>
 
 	<p><?php _e('In order to display this widget, you must first add some testimonials from your admin area.', 'sydney'); ?></p>
@@ -33,7 +30,9 @@ class Sydney_Testimonials extends WP_Widget {
 	<input class="widefat" id="<?php echo $this->get_field_id( 'see_all_text' ); ?>" name="<?php echo $this->get_field_name( 'see_all_text' ); ?>" type="text" value="<?php echo $see_all_text; ?>" size="3" /></p>		
 	<p><label for="<?php echo $this->get_field_id( 'category' ); ?>"><?php _e( 'Enter the slug for your category or leave empty to show all testimonials.', 'sydney' ); ?></label>
 	<input class="widefat" id="<?php echo $this->get_field_id( 'category' ); ?>" name="<?php echo $this->get_field_name( 'category' ); ?>" type="text" value="<?php echo $category; ?>" size="3" /></p>
-		
+	<p><label for="<?php echo $this->get_field_id( 'autoplay' ); ?>"><?php _e( 'Autoplay time [ms]', 'sydney' ); ?></label>
+	<input id="<?php echo $this->get_field_id( 'autoplay' ); ?>" name="<?php echo $this->get_field_name( 'autoplay' ); ?>" type="text" value="<?php echo $autoplay; ?>" size="3" /></p>
+    		
 	<?php
 	}
 
@@ -43,41 +42,18 @@ class Sydney_Testimonials extends WP_Widget {
 		$instance['number'] 		= strip_tags($new_instance['number']);
 		$instance['see_all'] 		= esc_url_raw( $new_instance['see_all'] );	
 		$instance['see_all_text'] 	= strip_tags($new_instance['see_all_text']);
-		$instance['category'] 		= strip_tags($new_instance['category']);		
-		$this->flush_widget_cache();
+		$instance['category'] 		= strip_tags($new_instance['category']);
+		$instance['autoplay'] 		= absint($new_instance['autoplay']);
 
-		$alloptions = wp_cache_get( 'alloptions', 'options' );
-		if ( isset($alloptions['sydney_testimonials']) )
-			delete_option('sydney_testimonials');		  
-		  
 		return $instance;
 	}
-	
-	function flush_widget_cache() {
-		wp_cache_delete('sydney_testimonials', 'widget');
-	}
-	
+
 	// display widget
 	function widget($args, $instance) {
-		$cache = array();
-		if ( ! $this->is_preview() ) {
-			$cache = wp_cache_get( 'sydney_testimonials', 'widget' );
-		}
-
-		if ( ! is_array( $cache ) ) {
-			$cache = array();
-		}
-
 		if ( ! isset( $args['widget_id'] ) ) {
 			$args['widget_id'] = $this->id;
 		}
 
-		if ( isset( $cache[ $args['widget_id'] ] ) ) {
-			echo $cache[ $args['widget_id'] ];
-			return;
-		}
-
-		ob_start();
 		extract($args);
 
 		$title 			= ( ! empty( $instance['title'] ) ) ? $instance['title'] : '';
@@ -89,6 +65,7 @@ class Sydney_Testimonials extends WP_Widget {
 			$number = -1;
 		}			
 		$category 		= isset( $instance['category'] ) ? esc_attr($instance['category']) : '';
+		$autoplay 		= ( ! empty( $instance['autoplay'] ) ) ? intval( $instance['autoplay'] ) : 5000;
 
 		$testimonials = new WP_Query( array(
 			'no_found_rows'       => true,
@@ -104,7 +81,7 @@ class Sydney_Testimonials extends WP_Widget {
 ?>
 			<?php if ( $title ) echo $before_title . $title . $after_title; ?>
 			<div class="col-md-12">
-				<div class="roll-testimonials">
+				<div class="roll-testimonials" data-autoplay="<?php echo intval($autoplay); ?>">
 					<?php while ( $testimonials->have_posts() ) : $testimonials->the_post(); ?>
 						<?php $function = get_post_meta( get_the_ID(), 'wpcf-client-function', true ); ?>
                         <div class="customer">
@@ -133,18 +110,10 @@ class Sydney_Testimonials extends WP_Widget {
 				</a>
 			<?php endif; ?>	
 
-
-		</section>		
 	<?php
 		echo $args['after_widget'];
 		wp_reset_postdata();
 		endif;
-		if ( ! $this->is_preview() ) {
-			$cache[ $args['widget_id'] ] = ob_get_flush();
-			wp_cache_set( 'sydney_testimonials', $cache, 'widget' );
-		} else {
-			ob_end_flush();
-		}
 	}
 	
 }
