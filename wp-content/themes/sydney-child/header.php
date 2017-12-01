@@ -35,7 +35,7 @@
 		<div class="header-wrap">
             <div class="container">
                 <div class="row">
-				<div id="Logo" class="col-md-4 col-sm-8 col-xs-12">
+				<div id="Logo" class="col-md-4 col-sm-2 col-xs-2">
 		        <?php if ( get_theme_mod('site_logo') ) : ?>
 							<a href="<?php echo esc_url( home_url( '/' ) ); ?>" title="<?php bloginfo('name'); ?>">
 								<img class="site-logo" src="<?php echo esc_url(get_theme_mod('site_logo')); ?>" alt="<?php bloginfo('name'); ?>" />
@@ -48,8 +48,8 @@
 					<h2 class="site-description"><?php bloginfo( 'description' ); ?></h2>
 		        <?php endif; ?>
 				</div>
-				<div class="col-md-8 col-sm-4 col-xs-12">
-					<div class="btn-menu"></div>
+				<div class="btn-menu pull-right"></div>
+				<div class="col-md-8 col-sm-4 col-xs-12 tablet-header">
 					<nav id="mainnav" class="mainnav clearfix" role="navigation">
 						<?php wp_nav_menu( array( 'theme_location' => 'primary' ) ); ?>
 						<?php wp_nav_menu( array( 'theme_location' => 'socials-menu', 'container_class' => 'social_nav' ) ); ?>

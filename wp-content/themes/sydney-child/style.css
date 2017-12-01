@@ -83,3 +83,181 @@ Sydney is based on Underscores http://underscores.me/, (C) 2012-2015 Automattic,
   font-weight: 200;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 }
+
+.white-is-tight {
+  color: #ffffff;
+}
+
+/* Portfolio */
+.portfolio-header {
+  padding-top: 100px;
+}
+#portfolio.container-fluid {
+  position: relative;
+  max-width: 1200px;
+  margin: auto;
+  overflow: hidden;
+}
+p.portfolio-pretext {
+  font-size: 1.1em;
+  line-height: 1.2;
+  padding-bottom: 30px;
+}
+.portfolio-wrapper {
+  position: relative;
+}
+.portfolio-pane {
+  position: relative;
+  padding: 0;
+  background: #1a1a1a;
+  cursor: pointer;
+  overflow: hidden;
+}
+.portfolio-pane > img {
+  opacity: 0.35;
+  transition: .4s;
+}
+.portfolio-pane:hover > img {
+  opacity: 0.75;
+}
+.portfolio-pane.active > img {
+  opacity: 1;
+}
+.portfolio-preview {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  min-height: 305px;
+  background: #fff;
+  padding: 1em;
+  -ms-transform: translateY(-50%);
+  -webkit-transform: translateY(-50%);
+  transform: translateY(-50%);
+  z-index: 2;
+  box-shadow: -1px 0px 6px 1px rgba(0,0,0,0.65);
+  border-left: 5px solid #d6504f;
+}
+.slideLeft {
+  -webkit-animation: slideLeft .5s;
+  animation: slideLeft .5s;
+}
+.portfolio-preview .fadeIn {
+  position: relative;
+  -webkit-animation: fadeIn .8s;
+  animation: fadeIn .8s;
+}
+
+@keyframes slideLeft {
+  0%{
+    right: -100%;
+  }
+  100% {
+    right: 0;
+  }
+}
+
+@keyframes fadeIn {
+    50%{
+      -webkit-transform: translate(100%);
+      -ms-transform: translate(100%);
+      transform: translate(100%);
+    }
+    100% {
+      -webkit-transform: translate(0%);
+      -ms-transform: translate(0%);
+      transform: translate(0%);
+    }
+}
+
+
+@media (max-width: 1024px){
+  /* HEADER */
+  #masthead {
+    background-color: #222;
+    padding: 0;
+  }
+  #masthead #Logo {
+    height: 58px;
+    line-height: 58px;
+  }
+  #masthead .tablet-header {
+    width: 100vw;
+    margin-left: -10px;
+  }
+  #masthead .btn-menu {
+    margin: 0;
+    height: 58px;
+    margin-right: 16px;
+    line-height: 58px;
+  }
+  #masthead .social_nav {
+    display: none;
+  }
+  #mainnav-mobi {
+    margin-top: 0;
+  }
+}
+@media (max-width: 767px){
+  #masthead .tablet-header {
+    margin-left: 0;
+  }
+  /* SLIDER */
+  #slideshow.header-slider .sydney-hero-area {
+    height: 320px !important;
+  }
+  .mobile-slide {
+    height: 320px;
+    max-width: none;
+  }
+  .text-slider p.pretitle {
+    margin-bottom: 5px;
+    font-size: 16px;
+  }
+  /* CONTENT */
+  #content.page-wrap {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+  /* PORTFOLIO */
+  .portfolio-header {
+    padding-top: 40px;
+  }
+  #portfolio.container-fluid {
+    padding-left: 25px;
+    padding-right: 25px;
+  }
+  .portfolio-pretext {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .portfolio-pane > img {
+    opacity: 1;
+    margin: auto;
+    display: block;
+  }
+  .portfolio-preview {
+    display: block !important;
+    position: relative;
+    transform: none;
+    border: none;
+    border-top: 5px solid #D6504f;
+    text-align: center;
+    box-shadow: none;
+    margin-bottom: 40px;
+  }
+  div.contact-form {
+    padding: 0 !important;
+  }
+}
+@media (max-width: 767px) and (orientation: landscape) {
+  .portfolio-preview {
+    border: none;
+  }
+  .portfolio-preview, .portfolio-pane {
+    width: 50%;
+  }
+  .portfolio-preview h2 {
+    margin-top: 0;
+  }
+}
